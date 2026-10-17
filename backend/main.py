@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import psutil
 
 app = FastAPI(title="catch-the-flag")
+readings = []
 
 @app.get("/health")
 def health_check():
@@ -16,3 +17,8 @@ def metrics():
         "cpu_percent": cpu_percent,
         "memory_percent": memory_percent
     }
+
+@app.post("/metrics/ingest")
+def ingest(payload: dict):
+    readings.append(payload)
+    return {"received": len(readings)}
