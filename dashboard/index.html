@@ -11,6 +11,8 @@
     <p>Welcome to the catch-the-flag dashboard! Here you can monitor the latest readings from the sensors of your machine.</p>
     <canvas id="cpuChart" width="400" height="200"></canvas>
     <canvas id="memoryChart" width="400" height="200"></canvas>
+    <canvas id="batteryChart" width="400" height="200"></canvas>
+    
     <script>
         const cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
             type: 'line',
@@ -56,6 +58,28 @@
             }
         });
 
+        const batteryChart = new Chart(document.getElementById('batteryChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Battery Level (%)',
+                    data: [],
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
         async function refreshData() {
             const response = await fetch('http://127.0.0.1:8000/metrics/readings');
             const data = await response.json();
@@ -68,6 +92,10 @@
             memoryChart.data.labels = readings.map((_, index) => index + 1);
             memoryChart.data.datasets[0].data = readings.map(reading => reading.memory_percent);
             memoryChart.update();
+
+            batteryChart.data.labels = readings.map((_, index) => index + 1);
+            batteryChart.data.datasets[0].data = readings.map(reading => reading.battery_percent);
+            batteryChart.update();
         }
 
         // Initial data load

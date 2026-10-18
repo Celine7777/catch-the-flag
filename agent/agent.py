@@ -6,10 +6,13 @@ while True:
     cpu_percent = psutil.cpu_percent(interval=1)
     memory_info = psutil.virtual_memory()
     memory_percent = memory_info.percent
+    battery = psutil.sensors_battery()
+
 
     payload = {
         "cpu_percent": cpu_percent,
-        "memory_percent": memory_percent
+        "memory_percent": memory_percent,
+        "battery_percent": battery.percent if battery else None,
     }
 
     try:
