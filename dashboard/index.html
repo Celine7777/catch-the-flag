@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>catch-the-flag</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>catch-the-flag</h1>
+    <p>Welcome to the catch-the-flag dashboard! Here you can monitor the latest readings from the sensors of your machine.</p>
+    <canvas id="cpuChart" width="400" height="200"></canvas>
+    <canvas id="memoryChart" width="400" height="200"></canvas>
+    <script>
+        const cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'CPU Usage (%)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        const memoryChart = new Chart(document.getElementById('memoryChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Memory Usage (%)',
+                    data: [],
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        async function refreshData() {
+            const response = await fetch('http://127.0.0.1:8000/metrics/readings');
+            const data = await response.json();
+            const readings = data.readings;
+
+            cpuChart.data.labels = readings.map((_, index) => index + 1);
+            cpuChart.data.datasets[0].data = readings.map(reading => reading.cpu);
+            cpuChart.update();
+
+            memoryChart.data.labels = readings.map((_, index) => index + 1);
+            memoryChart.data.datasets[0].data = readings.map(reading => reading.memory);
+            memoryChart.update();
+        }
+
+        // Initial data load
+        refreshData();
+
+        // Refresh data every 3 seconds
+        setInterval(refreshData, 3000);
+    </script>
+</body>
+</html>

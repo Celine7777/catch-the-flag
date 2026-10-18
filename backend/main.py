@@ -1,3 +1,4 @@
+from fastapi.responses import FileResponse
 from fastapi import FastAPI
 import psutil
 
@@ -22,3 +23,11 @@ def metrics():
 def ingest(payload: dict):
     readings.append(payload)
     return {"received": len(readings)}
+
+@app.get("/metrics/readings")
+def get_readings():
+    return {"readings": readings[-50:]}  # Return the last 50 readings
+
+@app.get("/")
+def home():
+    return FileResponse("dashboard/index.html")
