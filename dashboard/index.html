@@ -62,11 +62,11 @@
             const readings = data.readings;
 
             cpuChart.data.labels = readings.map((_, index) => index + 1);
-            cpuChart.data.datasets[0].data = readings.map(reading => reading.cpu);
+            cpuChart.data.datasets[0].data = readings.map(reading => reading.cpu_percent);
             cpuChart.update();
 
             memoryChart.data.labels = readings.map((_, index) => index + 1);
-            memoryChart.data.datasets[0].data = readings.map(reading => reading.memory);
+            memoryChart.data.datasets[0].data = readings.map(reading => reading.memory_percent);
             memoryChart.update();
         }
 
