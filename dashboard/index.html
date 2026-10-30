@@ -12,7 +12,9 @@
     <canvas id="cpuChart" width="400" height="200"></canvas>
     <canvas id="memoryChart" width="400" height="200"></canvas>
     <canvas id="batteryChart" width="400" height="200"></canvas>
-    
+    <canvas id="batteryGauge" width="400" height="200"></canvas>
+    <p id="batteryStatus"></p>
+
     <script>
         const cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
             type: 'line',
@@ -98,11 +100,77 @@
             batteryChart.update();
         }
 
+    
         // Initial data load
         refreshData();
 
         // Refresh data every 3 seconds
         setInterval(refreshData, 3000);
+
+        const batteryGauge = new Chart(document.getElementById('batteryGauge').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Battery Level'],
+                datasets: [{
+                    data: [0],
+                    backgroundColor: ['rgba(255, 159, 64, 1)', 'rgba(220, 220, 220, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Battery Level'
+                    }
+                }
+            }
+        });
+
+      
+        async function refreshBatteryGauge() {
+            const response = await fetch('http://127.0.0.1:8000/metrics');
+            const live = await response.json();
+            
+            const percentage = live.battery_percent;
+            if (percentage === null || percentage.length === 0) {
+                document.getElementById('batteryStatus').textContent = `Battery Level: N/A`;
+                return;
+            }
+        
+            batteryGauge.data.datasets[0].data = [percentage, 100 - percentage];
+            batteryGauge.update();
+
+            let level = 'Low';
+            if (percentage >= 70) {
+                level = 'High';
+            } else if (percentage >= 50) {
+                level = 'Medium';
+            } else {
+                level = 'Low';
+            }
+
+            let status = '';
+            if (live.battery_plugged) {
+                status = 'Plugged In';
+            } else if (live.battery_seconds_left !== null && live.battery_seconds_left !== undefined && live.battery_seconds_left !== -1) {
+                const hours = Math.floor(live.battery_seconds_left / 3600);
+                const minutes = Math.floor((live.battery_seconds_left % 3600) / 60);
+                status = `On Battery - ${hours}h ${minutes}m left`;
+            } else {
+                status = 'On Battery';
+            }
+          
+            document.getElementById('batteryStatus').textContent = `Battery Level: ${percentage}% (${level}) - ${status}`;
+        }
+
+        refreshBatteryGauge();
+        setInterval(refreshBatteryGauge, 3000);
     </script>
 </body>
 </html>
