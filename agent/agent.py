@@ -7,11 +7,13 @@ while True:
     memory_info = psutil.virtual_memory()
     memory_percent = memory_info.percent
     battery = psutil.sensors_battery()
+    disk = psutil.disk_usage('C:/')
 
 
     payload = {
         "cpu_percent": cpu_percent,
         "memory_percent": memory_percent,
+        "disk_percent": disk.percent,
         "battery_percent": battery.percent if battery else None,
     }
 

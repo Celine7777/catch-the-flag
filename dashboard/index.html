@@ -14,6 +14,7 @@
     <canvas id="batteryChart" width="400" height="200"></canvas>
     <canvas id="batteryGauge" width="400" height="200"></canvas>
     <p id="batteryStatus"></p>
+    <canvas id="diskChart" width="400" height="200"></canvas>
 
     <script>
         const cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
@@ -82,6 +83,28 @@
             }
         });
 
+        const diskChart = new Chart(document.getElementById('diskChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Disk Usage (%)',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
         async function refreshData() {
             const response = await fetch('http://127.0.0.1:8000/metrics/readings');
             const data = await response.json();
@@ -98,6 +121,10 @@
             batteryChart.data.labels = readings.map((_, index) => index + 1);
             batteryChart.data.datasets[0].data = readings.map(reading => reading.battery_percent);
             batteryChart.update();
+
+            diskChart.data.labels = readings.map((_, index) => index + 1);
+            diskChart.data.datasets[0].data = readings.map(reading => reading.disk_percent);
+            diskChart.update();
         }
 
     

@@ -21,6 +21,7 @@ def init_db():
             battery_percent REAL,
             battery_plugged INTEGER,
             battery_seconds_left INTEGER
+            disk_percent REAL
         )
     """)
     conn.commit()
@@ -51,9 +52,9 @@ def metrics():
 @app.post("/metrics/ingest")
 def ingest(payload: dict):
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("INSERT INTO readings (timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left) VALUES (?, ?, ?, ?, ?, ?)",
-                 (payload.get("timestamp"), payload.get("cpu_percent"), payload.get("memory_percent"), payload.get("battery_percent"), payload.get("battery_plugged"), payload.get("battery_seconds_left")))
-    
+    conn.execute("INSERT INTO readings (timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                 (payload.get("timestamp"), payload.get("cpu_percent"), payload.get("memory_percent"), payload.get("battery_percent"), payload.get("battery_plugged"), payload.get("battery_seconds_left"), payload.get("disk_percent")))
+
     conn.commit()
     count = conn.execute("SELECT COUNT(*) FROM readings").fetchone()[0]
     conn.close()
@@ -63,10 +64,10 @@ def ingest(payload: dict):
 @app.get("/metrics/readings")
 def get_readings():
     conn = sqlite3.connect(DB_PATH)
-    rows = conn.execute("SELECT id, timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left FROM readings ORDER BY timestamp DESC").fetchall()
+    rows = conn.execute("SELECT id, timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent FROM readings ORDER BY timestamp DESC").fetchall()
     conn.close()
     readings = [
-        {"id": row[0], "cpu_percent": row[2], "memory_percent": row[3], "battery_percent": row[4], "battery_plugged": row[5], "battery_seconds_left": row[6], "timestamp": row[1]} for row in reversed(rows)
+        {"id": row[0], "cpu_percent": row[2], "memory_percent": row[3], "battery_percent": row[4], "battery_plugged": row[5], "battery_seconds_left": row[6], "disk_percent": row[7], "timestamp": row[1]} for row in reversed(rows)
     ]
     return {"readings": readings}
 
