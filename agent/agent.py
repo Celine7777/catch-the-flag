@@ -2,19 +2,30 @@ import time
 import psutil
 import requests
 
+prev_io = psutil.net_io_counters()
+prev_time = time.time()
+
 while True:
     cpu_percent = psutil.cpu_percent(interval=1)
     memory_info = psutil.virtual_memory()
     memory_percent = memory_info.percent
     battery = psutil.sensors_battery()
     disk = psutil.disk_usage('C:/')
-
+    current_io = psutil.net_io_counters()
+    current_time = time.time()
+    time_delta = current_time - prev_time
+    net_up_kbps = (current_io.bytes_sent - prev_io.bytes_sent) / time_delta / 1024
+    net_down_kbps = (current_io.bytes_recv - prev_io.bytes_recv) / time_delta / 1024
+    prev_io = current_io
+    prev_time = current_time
 
     payload = {
         "cpu_percent": cpu_percent,
         "memory_percent": memory_percent,
         "disk_percent": disk.percent,
         "battery_percent": battery.percent if battery else None,
+        "net_up_kbps": net_up_kbps,
+        "net_down_kbps": net_down_kbps,
     }
 
     try:

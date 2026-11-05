@@ -14,6 +14,8 @@
     <canvas id="batteryChart" width="400" height="200"></canvas>
     <canvas id="batteryGauge" width="400" height="200"></canvas>
     <p id="batteryStatus"></p>
+    <p id="netup">Upload: -- kbps</p>
+    <p id="netdown">Download: -- kbps</p>
     <canvas id="diskChart" width="400" height="200"></canvas>
 
     <script>
@@ -125,6 +127,12 @@
             diskChart.data.labels = readings.map((_, index) => index + 1);
             diskChart.data.datasets[0].data = readings.map(reading => reading.disk_percent);
             diskChart.update();
+
+            const latestReading = readings.find(reading => reading.net_up_kbps !== null && reading.net_down_kbps !== null);
+            if (latestReading) {
+                document.getElementById('netup').textContent = `Upload: ${latestReading.net_up_kbps.toFixed(2)} kbps`;
+                document.getElementById('netdown').textContent = `Download: ${latestReading.net_down_kbps.toFixed(2)} kbps`;
+            }
         }
 
     
