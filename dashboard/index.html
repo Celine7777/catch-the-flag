@@ -16,6 +16,8 @@
     <p id="batteryStatus"></p>
     <p id="netup">Upload: -- kbps</p>
     <p id="netdown">Download: -- kbps</p>
+    <h2>Top Processes</h2>
+    <ul id="topProcesses"></ul>
     <canvas id="diskChart" width="400" height="200"></canvas>
 
     <script>
@@ -132,6 +134,19 @@
             if (latestReading) {
                 document.getElementById('netup').textContent = `Upload: ${latestReading.net_up_kbps.toFixed(2)} kbps`;
                 document.getElementById('netdown').textContent = `Download: ${latestReading.net_down_kbps.toFixed(2)} kbps`;
+            
+            }
+
+            const latestWithProcesses = readings.find(reading => reading.top_processes !== null && reading.top_processes.length > 0);
+            if (latestWithProcesses) {
+                const topProcessesList = document.getElementById('topProcesses');
+                topProcessesList.innerHTML = '';
+                const process = JSON.parse(latestWithProcesses.top_processes);
+                process.forEach(proc => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `PID: ${proc.pid}, Name: ${proc.name}, CPU: ${proc.cpu_percent}%, Memory: ${proc.memory_percent}%`;
+                    topProcessesList.appendChild(listItem);
+                });
             }
         }
 

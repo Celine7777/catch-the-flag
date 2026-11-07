@@ -23,7 +23,8 @@ def init_db():
             battery_seconds_left INTEGER,
             disk_percent REAL,
             net_up_kbps REAL,
-            net_down_kbps REAL
+            net_down_kbps REAL,
+            top_processes TEXT
         )
     """)
     conn.commit()
@@ -54,8 +55,8 @@ def metrics():
 @app.post("/metrics/ingest")
 def ingest(payload: dict):
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("INSERT INTO readings (timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent, net_up_kbps, net_down_kbps) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                 (payload.get("timestamp"), payload.get("cpu_percent"), payload.get("memory_percent"), payload.get("battery_percent"), payload.get("battery_plugged"), payload.get("battery_seconds_left"), payload.get("disk_percent"), payload.get("net_up_kbps"), payload.get("net_down_kbps")))
+    conn.execute("INSERT INTO readings (timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent, net_up_kbps, net_down_kbps, top_processes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 (payload.get("timestamp"), payload.get("cpu_percent"), payload.get("memory_percent"), payload.get("battery_percent"), payload.get("battery_plugged"), payload.get("battery_seconds_left"), payload.get("disk_percent"), payload.get("net_up_kbps"), payload.get("net_down_kbps"), payload.get("top_processes")))
 
     conn.commit()
     count = conn.execute("SELECT COUNT(*) FROM readings").fetchone()[0]
@@ -66,10 +67,10 @@ def ingest(payload: dict):
 @app.get("/metrics/readings")
 def get_readings():
     conn = sqlite3.connect(DB_PATH)
-    rows = conn.execute("SELECT id, timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent, net_up_kbps, net_down_kbps FROM readings ORDER BY timestamp DESC").fetchall()
+    rows = conn.execute("SELECT id, timestamp, cpu_percent, memory_percent, battery_percent, battery_plugged, battery_seconds_left, disk_percent, net_up_kbps, net_down_kbps, top_processes FROM readings ORDER BY timestamp DESC").fetchall()
     conn.close()
     readings = [
-        {"id": row[0], "cpu_percent": row[2], "memory_percent": row[3], "battery_percent": row[4], "battery_plugged": row[5], "battery_seconds_left": row[6], "disk_percent": row[7], "net_up_kbps": row[8], "net_down_kbps": row[9], "timestamp": row[1]} for row in reversed(rows)
+        {"id": row[0], "cpu_percent": row[2], "memory_percent": row[3], "battery_percent": row[4], "battery_plugged": row[5], "battery_seconds_left": row[6], "disk_percent": row[7], "net_up_kbps": row[8], "net_down_kbps": row[9], "top_processes": row[10], "timestamp": row[1]} for row in reversed(rows)
     ]
     return {"readings": readings}
 

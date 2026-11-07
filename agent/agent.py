@@ -1,6 +1,11 @@
+
 import time
 import psutil
 import requests
+import json
+
+from requests.help import info
+
 
 prev_io = psutil.net_io_counters()
 prev_time = time.time()
@@ -18,6 +23,14 @@ while True:
     net_down_kbps = (current_io.bytes_recv - prev_io.bytes_recv) / time_delta / 1024
     prev_io = current_io
     prev_time = current_time
+    process = []
+    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+        infor = proc.info
+        if infor['name'] :
+            process.append({'name': infor['name'], 'pid': infor['pid'], 'cpu_percent': infor['cpu_percent'], 'memory_percent': infor['memory_percent']})
+
+    process.sort(key=lambda x: x['cpu_percent'], reverse=True)
+    top_processes = json.dumps(process[:5])  # Get top 5 processes by CPU usage
 
     payload = {
         "cpu_percent": cpu_percent,
@@ -26,6 +39,7 @@ while True:
         "battery_percent": battery.percent if battery else None,
         "net_up_kbps": net_up_kbps,
         "net_down_kbps": net_down_kbps,
+        "top_processes": top_processes,
     }
 
     try:
