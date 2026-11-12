@@ -9,6 +9,8 @@ from requests.help import info
 
 prev_io = psutil.net_io_counters()
 prev_time = time.time()
+prev_disk = psutil.disk_io_counters()
+
 
 while True:
     cpu_percent = psutil.cpu_percent(interval=1)
@@ -23,6 +25,10 @@ while True:
     net_down_kbps = (current_io.bytes_recv - prev_io.bytes_recv) / time_delta / 1024
     prev_io = current_io
     prev_time = current_time
+    cur_disk = psutil.disk_io_counters()
+    disk_read_kbps = (cur_disk.read_bytes - prev_disk.read_bytes) / time_delta / 1024
+    disk_write_kbps = (cur_disk.write_bytes - prev_disk.write_bytes) / time_delta / 1024
+    prev_disk = cur_disk
     process = []
     for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
         infor = proc.info
@@ -39,6 +45,8 @@ while True:
         "battery_percent": battery.percent if battery else None,
         "net_up_kbps": net_up_kbps,
         "net_down_kbps": net_down_kbps,
+        "disk_read_kbps": disk_read_kbps,
+        "disk_write_kbps": disk_write_kbps,
         "top_processes": top_processes,
     }
 

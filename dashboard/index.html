@@ -16,9 +16,12 @@
     <p id="batteryStatus"></p>
     <p id="netup">Upload: -- kbps</p>
     <p id="netdown">Download: -- kbps</p>
+    <p id="diskRead">Disk Read: -- kbps</p>
+    <p id="diskWrite">Disk Write: -- kbps</p>
     <h2>Top Processes</h2>
     <ul id="topProcesses"></ul>
     <canvas id="diskChart" width="400" height="200"></canvas>
+
 
     <script>
         const cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
@@ -134,7 +137,16 @@
             if (latestReading) {
                 document.getElementById('netup').textContent = `Upload: ${latestReading.net_up_kbps.toFixed(2)} kbps`;
                 document.getElementById('netdown').textContent = `Download: ${latestReading.net_down_kbps.toFixed(2)} kbps`;
-            
+
+                const diskRead = readings.find(reading => reading.disk_read_kbps !== null);
+                if (diskRead) {
+                    document.getElementById('diskRead').textContent = `Disk Read: ${diskRead.disk_read_kbps.toFixed(2)} kbps`;
+                }
+
+                const diskWrite = readings.find(reading => reading.disk_write_kbps !== null);
+                if (diskWrite) {
+                    document.getElementById('diskWrite').textContent = `Disk Write: ${diskWrite.disk_write_kbps.toFixed(2)} kbps`;
+                }
             }
 
             const latestWithProcesses = readings.find(reading => reading.top_processes !== null && reading.top_processes.length > 0);
